@@ -2,6 +2,7 @@ import {
 	Menu,
 	TAbstractFile,
 	TFolder,
+	TFile,
 	Notice,
 	PluginSettingTab,
 } from 'obsidian'
@@ -12,6 +13,11 @@ import { assignmentColor } from '../colors/ColorStore'
 import { ColorResolver } from '../colors/ColorResolver'
 import { migrateSettings, FolderColorGraphSettings } from '../colors/Settings'
 import { suggestColorForFolder } from '../colors/SuggestedColor'
+import {
+	readFolderNotesSettings,
+	folderNoteOptions,
+	indexFolderNotes,
+} from '../folder-notes/FolderNoteResolver'
 
 export class FolderColorGraphPlugin extends FileColorPlugin {
 	declare settings: FolderColorGraphSettings
@@ -47,7 +53,20 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 			const color = assignmentColor(a.color, this.settings.palette)
 			if (color) explicit.set(a.path, color)
 		}
-		this.resolver.reset(explicit)
+		const notes = this.settings.includeFolderNotes
+			? indexFolderNotes(
+					this.app.vault
+						.getAllLoadedFiles()
+						.filter((file): file is TFolder => file instanceof TFolder)
+						.map((file) => file.path),
+					(path) => this.app.vault.getAbstractFileByPath(path) instanceof TFile,
+					folderNoteOptions(
+						readFolderNotesSettings(this.app),
+						this.settings.folderNoteConvention
+					)
+			  )
+			: new Map<string, string>()
+		this.resolver.reset(explicit, notes)
 		this.applyColorStyles()
 	}
 

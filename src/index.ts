@@ -1,2 +1,2 @@
-import { FileColorPlugin } from './plugin/FileColorPlugin'
-export default FileColorPlugin
+import { FolderColorGraphPlugin } from './plugin/FolderColorGraphPlugin'
+export default FolderColorGraphPlugin

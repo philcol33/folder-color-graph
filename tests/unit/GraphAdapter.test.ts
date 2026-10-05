@@ -93,17 +93,57 @@ describe('native runtime graph safety', () => {
 		adapter.sync(f.workspace, false)
 		expect(f.renderer.nodes[0].getFillColor).toBe(original)
 	})
-  it('independently enables local and global graphs', () => {
-    const global = fixture(), local = fixture()
-    const workspace = { getLeavesOfType: (type: string) => [{view:{renderer: type === 'graph' ? global.renderer : local.renderer}}] }
-    const adapter = new GraphAdapter(() => '#123456', () => true)
-    adapter.sync(workspace, false, true)
-    expect(global.renderer.nodes[0].getFillColor()).toBe(global.native)
-    expect(local.renderer.nodes[0].getFillColor()).toEqual({rgb:0x123456,a:1})
-    adapter.sync(workspace, true, false)
-    expect(local.renderer.nodes[0].getFillColor()).toBe(local.native)
-    expect(global.renderer.nodes[0].getFillColor()).toEqual({rgb:0x123456,a:1})
-    adapter.dispose()
-  })
+	it('independently enables local and global graphs', () => {
+		const global = fixture(),
+			local = fixture()
+		const workspace = {
+			getLeavesOfType: (type: string) => [
+				{
+					view: {
+						renderer: type === 'graph' ? global.renderer : local.renderer,
+					},
+				},
+			],
+		}
+		const adapter = new GraphAdapter(
+			() => '#123456',
+			() => true
+		)
+		adapter.sync(workspace, false, true)
+		expect(global.renderer.nodes[0].getFillColor()).toBe(global.native)
+		expect(local.renderer.nodes[0].getFillColor()).toEqual({
+			rgb: 0x123456,
+			a: 1,
+		})
+		adapter.sync(workspace, true, false)
+		expect(local.renderer.nodes[0].getFillColor()).toBe(local.native)
+		expect(global.renderer.nodes[0].getFillColor()).toEqual({
+			rgb: 0x123456,
+			a: 1,
+		})
+		adapter.dispose()
+	})
 
+	it('handles immutable renderer/node instances without throwing', () => {
+		const f = fixture(),
+			notify = vi.fn()
+		Object.freeze(f.renderer)
+		const adapter = new GraphAdapter(
+			() => '#123456',
+			() => true,
+			notify
+		)
+		expect(() => adapter.sync(f.workspace, true)).not.toThrow()
+		expect(() => adapter.dispose()).not.toThrow()
+		expect(notify).toHaveBeenCalledTimes(1)
+		const g = fixture(),
+			second = new GraphAdapter(
+				() => '#123456',
+				() => true
+			)
+		second.sync(g.workspace, true)
+		Object.freeze(g.renderer.nodes[0])
+		expect(() => second.dispose()).not.toThrow()
+		expect(g.renderer.nodes[0].getFillColor()).toBe(g.native)
+	})
 })

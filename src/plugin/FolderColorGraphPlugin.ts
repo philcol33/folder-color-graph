@@ -40,6 +40,7 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 	private graph?: GraphAdapter
 	private loaded = false
 	private folderNotesSignature = ''
+	private assignmentQueue: Promise<void> = Promise.resolve()
 	private saveQueue: Promise<void> = Promise.resolve()
 
 	async onload() {
@@ -172,7 +173,15 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		return new FolderColorSettingsTab(this.app, this)
 	}
 
-	async assign(folder: TFolder, color: string | null) {
+	assign(folder: TFolder, color: string | null): Promise<void> {
+		const operation = this.assignmentQueue
+			.catch(() => undefined)
+			.then(() => this.applyAssignment(folder, color))
+		this.assignmentQueue = operation
+		return operation
+	}
+
+	private async applyAssignment(folder: TFolder, color: string | null) {
 		if (this.app.vault.getAbstractFileByPath(folder.path) !== folder) {
 			throw new Error('The folder no longer exists.')
 		}

@@ -125,8 +125,8 @@ export class GraphAdapter {
 			active: true,
 		}
 		// Keep native receiver semantics in wrappers.
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const adapter = this
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const adapter = this
 		patch.wrapper = function (this: Renderer, ...args) {
 			const result = original.apply(this, args)
 			if (adapter.active && patch.active) {
@@ -165,8 +165,8 @@ export class GraphAdapter {
 				const original = node.getFillColor
 				state = { node, original, wrapper: original, fill: null, active: true }
 				const cached = state
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const adapter = this
+				// eslint-disable-next-line @typescript-eslint/no-this-alias
+				const adapter = this
 				state.wrapper = function (this: Node, ...args) {
 					if (
 						!adapter.active ||
@@ -213,6 +213,7 @@ export class GraphAdapter {
 	private restore(patch: RendererPatch) {
 		patch.active = false
 		for (const state of patch.nodes.values()) this.restoreNode(state)
+		patch.nodes.clear()
 		try {
 			if (patch.renderer.setData === patch.wrapper)
 				patch.renderer.setData = patch.original

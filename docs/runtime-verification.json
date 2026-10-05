@@ -1,0 +1,79 @@
+{
+  "version": "1.13.7",
+  "checks": [
+    {
+      "name": "global blue inheritance",
+      "passed": true
+    },
+    {
+      "name": "global nested orange override",
+      "passed": true
+    },
+    {
+      "name": "local graph blue and orange",
+      "passed": true
+    },
+    {
+      "name": "live color change with open graph",
+      "passed": true
+    },
+    {
+      "name": "removing child override restores inherited color",
+      "passed": true
+    },
+    {
+      "name": "outside-folder note correspondence",
+      "passed": true
+    },
+    {
+      "name": "native group precedence",
+      "passed": true
+    },
+    {
+      "name": "folder color precedence",
+      "passed": true
+    },
+    {
+      "name": "uncolored note retains native fill",
+      "passed": true
+    },
+    {
+      "name": "graph receives newly created notes",
+      "passed": true
+    },
+    {
+      "name": "rename retains folder and child assignments",
+      "passed": true
+    },
+    {
+      "name": "move retains graph inheritance",
+      "passed": true
+    },
+    {
+      "name": "new descendant inherits automatically",
+      "passed": true
+    },
+    {
+      "name": "unload restores native graph color",
+      "passed": true
+    },
+    {
+      "name": "reload restores persisted colors",
+      "passed": true
+    },
+    {
+      "name": "delete removes obsolete assignments",
+      "passed": true
+    },
+    {
+      "name": "graph.json remains byte-for-byte unchanged",
+      "passed": true
+    },
+    {
+      "name": "original fixture Markdown remains unchanged",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

@@ -106,4 +106,27 @@ describe('fork lifecycle integration', () => {
 			plugin.cleanups.forEach((fn) => fn())
 		}
 	})
+	it('serializes assignments so a failed write cannot discard a later assignment', async () => {
+		const app = createMockPluginApp(),
+			a = new TFolder('A'),
+			b = new TFolder('B')
+		app.vault.getAbstractFileByPath = (path) =>
+			path === 'A' ? a : path === 'B' ? b : null
+		app.vault.getAllLoadedFiles = () => [a, b]
+		const plugin = new FolderColorGraphPlugin(app)
+		await plugin.onload()
+		try {
+			vi.spyOn(plugin, 'saveData').mockRejectedValueOnce(new Error('disk full'))
+			const first = plugin.assign(a as never, 'blue')
+			const second = plugin.assign(b as never, 'orange')
+			await expect(first).rejects.toThrow('disk full')
+			await second
+			expect(plugin.settings.fileColors).toEqual([
+				{ path: 'B', color: 'orange' },
+			])
+		} finally {
+			plugin.onunload()
+			plugin.cleanups.forEach((fn) => fn())
+		}
+	})
 })

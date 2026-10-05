@@ -58,4 +58,15 @@ describe('inherited folder colors', () => {
 		])
 			expect(parseColor(value)).toBeNull()
 	})
+	it('resolves ten thousand notes without per-note ancestor scans after caching', () => {
+		const resolver = new ColorResolver(new Map([['University', '#123456']]))
+		for (let i = 0; i < 10000; i++)
+			expect(
+				resolver.resolveColorForFile('University/Course/Note ' + i + '.md')
+			).toBe('#123456')
+		resolver.reset(new Map([['University/Course', '#abcdef']]))
+		expect(resolver.resolveColorForFile('University/Course/Note 9999.md')).toBe(
+			'#abcdef'
+		)
+	})
 })

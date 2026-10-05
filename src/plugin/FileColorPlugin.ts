@@ -1,10 +1,17 @@
-import { debounce, Menu, MenuItem, Plugin,
-  PluginSettingTab, TAbstractFile } from 'obsidian'
+import {
+	debounce,
+	Menu,
+	MenuItem,
+	Plugin,
+	PluginSettingTab,
+	TAbstractFile,
+} from 'obsidian'
 import { SetColorModal } from 'plugin/SetColorModal'
 import { FileColorSettingTab } from 'plugin/FileColorSettingTab'
 
 import type { FileColorPluginSettings } from 'settings'
 import { defaultSettings } from 'settings'
+import { renameAssignments, deleteAssignments } from '../colors/ColorStore'
 
 export class FileColorPlugin extends Plugin {
 	settings: FileColorPluginSettings = defaultSettings
@@ -34,22 +41,27 @@ export class FileColorPlugin extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('rename', async (newFile, oldPath) => {
-				this.settings.fileColors
-					.filter((fileColor) => fileColor.path === oldPath)
-					.forEach((fileColor) => {
-						fileColor.path = newFile.path
-					})
-				this.saveSettings()
+				this.settings.fileColors = renameAssignments(
+					this.settings.fileColors,
+					oldPath,
+					newFile.path
+				)
+				void this.saveSettings().catch(() =>
+					console.warn('Folder color settings could not be saved.')
+				)
 				this.applyColorStyles()
 			})
 		)
 
 		this.registerEvent(
 			this.app.vault.on('delete', async (file) => {
-				this.settings.fileColors = this.settings.fileColors.filter(
-					(fileColor) => !fileColor.path.startsWith(file.path)
+				this.settings.fileColors = deleteAssignments(
+					this.settings.fileColors,
+					file.path
 				)
-				this.saveSettings()
+				void this.saveSettings().catch(() =>
+					console.warn('Folder color settings could not be saved.')
+				)
 			})
 		)
 

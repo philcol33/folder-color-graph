@@ -12,7 +12,7 @@ export class FolderColorSettingsTab extends PluginSettingTab {
 			new Setting(this.containerEl).setName(color.name).addColorPicker((p) =>
 				p.setValue(color.value).onChange(async (value) => {
 					color.value = value
-					await this.plugin.saveSettings(true)
+					await this.plugin.saveSettings()
 					this.plugin.applyColorStyles()
 				})
 			)

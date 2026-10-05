@@ -93,4 +93,17 @@ describe('native runtime graph safety', () => {
 		adapter.sync(f.workspace, false)
 		expect(f.renderer.nodes[0].getFillColor).toBe(original)
 	})
+  it('independently enables local and global graphs', () => {
+    const global = fixture(), local = fixture()
+    const workspace = { getLeavesOfType: (type: string) => [{view:{renderer: type === 'graph' ? global.renderer : local.renderer}}] }
+    const adapter = new GraphAdapter(() => '#123456', () => true)
+    adapter.sync(workspace, false, true)
+    expect(global.renderer.nodes[0].getFillColor()).toBe(global.native)
+    expect(local.renderer.nodes[0].getFillColor()).toEqual({rgb:0x123456,a:1})
+    adapter.sync(workspace, true, false)
+    expect(local.renderer.nodes[0].getFillColor()).toBe(local.native)
+    expect(global.renderer.nodes[0].getFillColor()).toEqual({rgb:0x123456,a:1})
+    adapter.dispose()
+  })
+
 })

@@ -84,7 +84,7 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		this.graph?.sync(
 			this.app.workspace,
 			this.settings.graphEnabled,
-			false,
+			this.settings.localGraphEnabled,
 			this.settings.groupPrecedence === 'native'
 		)
 	}

@@ -17,6 +17,7 @@ export class FolderColorModal extends SetColorModal {
 			? this.plugin.suggest(this.file.path)
 			: null
 		let selected = current ?? suggested?.id ?? ''
+		let acceptSuggestion = !current && !!suggested
 		const summary = this.contentEl.createEl('p', {
 			cls: 'folder-color-graph-selection',
 		})
@@ -25,7 +26,12 @@ export class FolderColorModal extends SetColorModal {
 			summary.setText(
 				`${
 					!current && selected === suggested?.id ? 'Suggested: ' : 'Selected: '
-				}${preset?.name ?? (selected || 'Choose a color')}`
+				}${
+					preset?.name ??
+					(selected === suggested?.id
+						? suggested.name
+						: selected || 'Choose a color')
+				}`
 			)
 		}
 		describeSelection()
@@ -42,6 +48,7 @@ export class FolderColorModal extends SetColorModal {
 			button.classList.add('folder-color-graph-swatch')
 			choices.push({ id: color.id, button })
 			button.onclick = () => {
+				acceptSuggestion = false
 				selected = color.id
 				update()
 			}
@@ -69,6 +76,7 @@ export class FolderColorModal extends SetColorModal {
 						assignmentColor(selected, this.plugin.settings.palette) ?? '#4f83cc'
 					)
 					.onChange((value) => {
+						acceptSuggestion = false
 						selected = value
 						update()
 					})
@@ -79,7 +87,9 @@ export class FolderColorModal extends SetColorModal {
 			pending = true
 			apply.setDisabled(true)
 			try {
-				await this.plugin.assign(this.file, color)
+				if (acceptSuggestion && color !== null)
+					await this.plugin.assignSuggested(this.file)
+				else await this.plugin.assign(this.file, color)
 				this.close()
 			} catch {
 				new Notice(

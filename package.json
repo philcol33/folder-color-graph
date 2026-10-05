@@ -1,6 +1,6 @@
 {
   "name": "folder-color-graph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Assign colors to folders and automatically apply them to their notes in Obsidian Graph View.",
   "main": "main.js",
   "scripts": {

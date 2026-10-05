@@ -16,12 +16,13 @@ Folder Notes by LostPaul is supported read-only for Markdown inside/parent-folde
 
 - Enable Global Graph, Local Graph, folder-note correspondence, and Explorer text separately.
 - Prefer folder colors (default) or existing native graph group colors.
-- Enable suggestions and prefer unused colors.
+- Enable automatic suggestions, which always select a unique folder color.
+- Replace existing repeated folder colors with **Make colors unique** in settings, or the **Make existing folder colors unique** command. The first assignment of each color is retained.
 - Add, edit, remove, reorder, or reset the palette. Removing/resetting a palette preserves assignments as custom hex colors.
 
 The eight default swatches use moderately saturated midtones: Blue `#4f83cc`, Orange `#ca8135`, Teal `#389b90`, Purple `#9174c6`, Rose `#c96d88`, Green `#789e46`, Red `#c46b61`, Ochre `#b49b44`. They balance hue separation and visibility on native light/dark graph backgrounds, avoiding neon colors. They are not a guarantee of WCAG text contrast on every theme. Presets have text names, keyboard focus and pressed-state labels; colors are never silently changed with the theme.
 
-Suggestions deterministically avoid the nearest parent, then immediately colored siblings, then favor least-used colors; ties follow palette order. An empty palette still permits a custom color.
+Suggestions use the first unused preset. When the palette runs out (or is empty), they generate a new custom color, selecting among midtones for separation from existing folder colors. Hex and RGB values are normalized to prevent repeats even under different names. Repeating **Assign suggested color** keeps a folder's existing unique color. Suggestions are checked when saved, so simultaneous actions cannot reserve the same color. Manual preset and custom choices remain available.
 
 ## Installation and development
 

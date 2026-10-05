@@ -1,7 +1,7 @@
 {
   "id": "folder-color-graph",
   "name": "Folder Color Graph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.2.7",
   "description": "Assign colors to folders and automatically apply them to their notes in Obsidian Graph View.",
   "author": "Philippe Colling (based on File Color by ecustic)",

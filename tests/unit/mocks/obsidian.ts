@@ -29,6 +29,7 @@ export class Plugin {
   register = (callback: () => void) => { this.cleanups.push(callback) }
   registerInterval = (id: number) => { this.cleanups.push(() => window.clearInterval(id)) }
   registerEvent = (_eventRef: unknown) => undefined
+  addCommand = (_command: unknown) => undefined
   addSettingTab = (_tab: PluginSettingTab) => undefined
 }
 

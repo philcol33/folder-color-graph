@@ -122,11 +122,24 @@ export class FolderColorSettingsTab extends PluginSettingTab {
 			'automaticSuggestions',
 			'Preselect a stable suggestion when coloring a new folder.'
 		)
-		toggle(
-			'Prefer unused colors',
-			'preferUnused',
-			'Choose the least-used color after avoiding parent and sibling colors.'
-		)
+		el.createEl('p', {
+			text: 'Automatic suggestions always use a color unique to its folder. When presets run out, a new color is generated.',
+		})
+		new Setting(el)
+			.setName('Remove repeated folder colors')
+			.setDesc(
+				'Keep the first use of each color and give repeated assignments new unique colors.'
+			)
+			.addButton((b) =>
+				b.setButtonText('Make colors unique').onClick(() => {
+					void this.plugin
+						.makeColorsUnique()
+						.then(
+							(count) => new Notice(`${count} repeated folder colors replaced.`)
+						)
+						.catch(() => new Notice('Could not save unique folder colors.'))
+				})
+			)
 		el.createEl('h3', { text: 'File Explorer' })
 		toggle(
 			'Color folder text',

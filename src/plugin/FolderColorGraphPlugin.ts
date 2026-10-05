@@ -13,7 +13,10 @@ import { FolderColorSettingsTab } from './FolderColorSettingsTab'
 import { assignmentColor } from '../colors/ColorStore'
 import { ColorResolver } from '../colors/ColorResolver'
 import { migrateSettings, FolderColorGraphSettings } from '../colors/Settings'
-import { suggestColorForFolder } from '../colors/SuggestedColor'
+import {
+	suggestColorForFolder,
+	uniquifyFolderColors,
+} from '../colors/SuggestedColor'
 import {
 	readFolderNotesSettings,
 	folderNoteOptions,
@@ -31,8 +34,7 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 			this.settings.fileColors.filter(
 				(a) => this.app.vault.getAbstractFileByPath(a.path) instanceof TFolder
 			),
-			this.settings.palette,
-			this.settings.preferUnused
+			this.settings.palette
 		)
 	}
 	readonly resolver = new ColorResolver(new Map())
@@ -79,6 +81,17 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		this.registerEvent(this.app.vault.on('create', () => this.refreshColors()))
 		this.registerEvent(this.app.vault.on('delete', () => this.refreshColors()))
 		this.registerEvent(this.app.vault.on('rename', () => this.refreshColors()))
+		this.addCommand({
+			id: 'make-folder-colors-unique',
+			name: 'Make existing folder colors unique',
+			callback: () => {
+				void this.makeColorsUnique()
+					.then(
+						(count) => new Notice(`${count} repeated folder colors replaced.`)
+					)
+					.catch(() => new Notice('Could not save unique folder colors.'))
+			},
+		})
 		this.refreshColors()
 	}
 
@@ -144,15 +157,9 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 					.setTitle('Assign suggested color')
 					.setIcon('wand')
 					.onClick(() => {
-						const suggestion = this.suggest(file.path)
-						if (suggestion)
-							void this.assign(file, suggestion.id).catch(
-								() => new Notice('Could not save folder color.')
-							)
-						else
-							new Notice(
-								'Add a valid palette color in Folder Color Graph settings.'
-							)
+						void this.assignSuggested(file).catch(
+							() => new Notice('Could not save a unique folder color.')
+						)
 					})
 			)
 		if (this.settings.fileColors.some((a) => a.path === file.path)) {
@@ -173,12 +180,49 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		return new FolderColorSettingsTab(this.app, this)
 	}
 
-	assign(folder: TFolder, color: string | null): Promise<void> {
-		const operation = this.assignmentQueue
-			.catch(() => undefined)
-			.then(() => this.applyAssignment(folder, color))
-		this.assignmentQueue = operation
+	private enqueueAssignment<T>(work: () => Promise<T>): Promise<T> {
+		const operation = this.assignmentQueue.catch(() => undefined).then(work)
+		this.assignmentQueue = operation.then(
+			() => undefined,
+			() => undefined
+		)
 		return operation
+	}
+
+	assign(folder: TFolder, color: string | null): Promise<void> {
+		return this.enqueueAssignment(() => this.applyAssignment(folder, color))
+	}
+
+	assignSuggested(folder: TFolder): Promise<void> {
+		return this.enqueueAssignment(() => {
+			const suggestion = this.suggest(folder.path)
+			if (!suggestion) throw new Error('No unused RGB colors remain.')
+			return this.applyAssignment(folder, suggestion.id)
+		})
+	}
+
+	makeColorsUnique(): Promise<number> {
+		return this.enqueueAssignment(async () => {
+			const before = this.settings.fileColors
+			const unique = uniquifyFolderColors(
+				before,
+				this.settings.palette,
+				(path) => this.app.vault.getAbstractFileByPath(path) instanceof TFolder
+			)
+			const changed = unique.filter(
+				(a, i) => a.color !== before[i].color
+			).length
+			if (!changed) return 0
+			this.settings.fileColors = unique
+			try {
+				await this.saveSettings()
+			} catch (error) {
+				this.settings.fileColors = before
+				this.refreshColors()
+				throw error
+			}
+			return changed
+		})
 	}
 
 	private async applyAssignment(folder: TFolder, color: string | null) {

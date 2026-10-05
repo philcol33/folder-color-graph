@@ -4,7 +4,13 @@ Environment: macOS 26.6.2 ARM, Obsidian 1.13.7, native Default theme. All vault 
 
 ## Automated checks
 
-35 tests across 8 suites pass, including 16 preserved upstream tests. Production TypeScript check/build and ESLint pass. Coverage includes nearest ancestor resolution; remove/nested overrides; subtree rename/move/delete boundaries; Unicode, accents, spaces, punctuation and quoted paths; safe hex/RGB parsing; deterministic suggestions; migration preservation; inside/outside/custom-template Folder Notes; group/native fallback; late nodes and disabled views; no per-frame resolution; foreign/frozen wrappers; failed/concurrent saves; and Explorer title-only styling. A 10,000-note resolver workload passes (synthetic paths, not 10,000 files).
+40 tests across 8 suites pass, including 16 preserved upstream tests. Production TypeScript check/build and ESLint pass. Coverage includes nearest ancestor resolution; remove/nested overrides; subtree rename/move/delete boundaries; Unicode, accents, spaces, punctuation and quoted paths; safe hex/RGB parsing; deterministic suggestions; migration preservation; inside/outside/custom-template Folder Notes; group/native fallback; late nodes and disabled views; no per-frame resolution; foreign/frozen wrappers; failed/concurrent saves; and Explorer title-only styling. A 10,000-note resolver workload passes (synthetic paths, not 10,000 files).
+
+## Unique suggestions, version 0.1.1
+
+Automatic suggestions now use unused presets and generate distinct normalized hex values once the palette is exhausted. Regression checks cover 200 unique assignments, an empty palette, hex/RGB aliases, repeated assignments retaining their unique color, and concurrent automatic assignments beyond the eight presets. Failed saves roll back without reserving a color; repairing duplicates preserves the first assignment, skips legacy file/missing-folder entries, and is idempotent.
+
+On explicit user request, 0.1.1 was installed in both the test vault and the real vault's `.obsidian-mac` plugin directory. Both existing installations and plugin data were backed up outside Git. The loaded real-vault settings showed the new controls. **Make colors unique** reported 15 replacements; on-disk verification confirmed 23 existing folder assignments with 23 unique color values, retaining the first eight assignments and all other settings. Repeating the action reported zero replacements and left data byte-for-byte unchanged. Native graph configuration, Folder Notes data, original File Color data and both enabled-plugin lists remained unchanged. The native context-menu quick-action click could not be completed because the computer-use tool lost the menu window; repeated/concurrent assignment behavior is covered by automated integration tests.
 
 ## Running Obsidian
 

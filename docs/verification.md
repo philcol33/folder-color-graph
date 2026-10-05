@@ -1,6 +1,6 @@
 # Verification
 
-Environment: macOS 26.6.2 ARM, Obsidian 1.13.7, native Default theme. All vault operations used the existing development test vault. The plugin was never installed in the real vault.
+Environment: macOS 26.6.2 ARM, Obsidian 1.13.7, native Default theme. All vault operations used the existing development test vault. Initial development verification used only the test vault; production deployment was performed afterward on explicit user request.
 
 ## Automated checks
 
@@ -20,4 +20,4 @@ Original File Color remains installed with its distinct ID, disabled for fork te
 
 Graph hooks use guarded private APIs; confirmed only on Obsidian 1.13.7 desktop/macOS. Other versions/mobile and real enabled Folder Notes interoperability have not been manually validated. Folder Notes setting-based correspondence is unit-tested; same-name fallback works in actual Graph. Unsupported Folder Notes storage/types and pattern exclusions are documented. Native group precedence uses native node.color, so another runtime coloring plugin that overrides only getFillColor may still conflict; foreign wrappers are preserved and made safe on unload.
 
-No personal note contents, vault data, generated bundles or dependency directories are tracked in Git. The MIT license is unchanged. Implementation commits remain local; no code has been pushed to origin or upstream.
+No personal note contents, vault data, generated bundles or dependency directories are tracked in Git. The MIT license is unchanged. After explicit user approval, implementation commits were pushed to origin/master and the production build was installed and enabled using `.obsidian-mac`. Upstream push remains disabled. The real-vault settings/menu preview and configuration preservation were checked; no folder color was assigned during that preview.

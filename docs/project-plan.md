@@ -24,3 +24,8 @@ Each milestone receives a local commit; no implementation is pushed without a re
 All nine milestones implemented and committed locally. The test vault has the final build enabled, with the course blue and Assignments orange. Global/Local Graph are verified on desktop 1.13.7. The temporary QA runner was disabled and moved out of the vault; its disposable test fixtures were sent to Trash. The test vault's original light scheme was restored after dark-theme verification. Colors survived an Obsidian quit/reopen.
 
 Validation: 35 tests in 8 suites; ESLint and strict production TypeScript/build pass; 18 in-app lifecycle checks pass. Ten thousand synthetic resolver lookups tested without creating ten thousand vault files. Folder Notes configuration interop is unit-tested against the inspected schema; real enabled Folder Notes and mobile remain unverified. Compatibility details and evidence are in verification.md.
+
+## Production deployment — 2026-10-05
+Following the user's explicit request, the tested commits were pushed to the fork's master branch and the verified build was installed in the real vault's `.obsidian-mac/plugins/folder-color-graph`. Folder Color Graph is enabled. Original File Color remains installed, with its data preserved, and was disabled to avoid duplicate menus. All other enabled plugins were preserved.
+
+The settings page and Suggested Blue folder-menu preview were verified in the running real vault; the preview was cancelled without assigning a folder color. Native graph configuration, Folder Notes data, original File Color data and the separate `.obsidian` enabled-plugin list were confirmed unchanged. No test-vault color data was copied.

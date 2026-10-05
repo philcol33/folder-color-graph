@@ -138,9 +138,9 @@ export class FileColorPlugin extends Plugin {
 	private applyColorStylesInternal() {
 		const fileExplorers = this.app.workspace.getLeavesOfType('file-explorer')
 		fileExplorers.forEach((fileExplorer) => {
-			Object.entries(fileExplorer.view.fileItems).forEach(
+			Object.entries(fileExplorer.view.fileItems ?? {}).forEach(
 				([path, fileItem]) => {
-					this.styleFileItem(path, fileItem.el)
+					if (fileItem?.el instanceof HTMLElement) this.styleFileItem(path, fileItem.el)
 				}
 			)
 		})

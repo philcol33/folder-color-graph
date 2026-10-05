@@ -6,6 +6,7 @@ import {
 	Notice,
 	PluginSettingTab,
 } from 'obsidian'
+import { GraphAdapter } from '../graph/GraphAdapter'
 import { FileColorPlugin } from './FileColorPlugin'
 import { FolderColorModal } from '../explorer/FolderColorModal'
 import { FolderColorSettingsTab } from './FolderColorSettingsTab'
@@ -35,17 +36,61 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		)
 	}
 	readonly resolver = new ColorResolver(new Map())
+	private graph?: GraphAdapter
+	private loaded = false
+	private folderNotesSignature = ''
 	private saveQueue: Promise<void> = Promise.resolve()
 
 	async onload() {
+		this.loaded = true
 		await super.onload()
+		this.graph = new GraphAdapter(
+			(path) => this.resolver.resolveColorForFile(path),
+			(path) => {
+				const file = this.app.vault.getAbstractFileByPath(path)
+				return file instanceof TFile && file.extension === 'md'
+			},
+			() =>
+				new Notice(
+					'Folder Color Graph: native graph coloring is unavailable for this view. Explorer colors still work.'
+				)
+		)
+		this.registerEvent(
+			this.app.workspace.on('layout-change', () => this.refreshColors())
+		)
+		this.registerInterval(
+			window.setInterval(() => {
+				this.syncGraph()
+				const signature = JSON.stringify(readFolderNotesSettings(this.app))
+				if (signature !== this.folderNotesSignature) {
+					this.folderNotesSignature = signature
+					this.refreshColors()
+				}
+			}, 1000)
+		)
+		const observer = new MutationObserver(() => this.applyColorStyles())
+		observer.observe(this.app.workspace.containerEl, {
+			childList: true,
+			subtree: true,
+		})
+		this.register(() => observer.disconnect())
 		this.registerEvent(this.app.vault.on('create', () => this.refreshColors()))
 		this.registerEvent(this.app.vault.on('delete', () => this.refreshColors()))
 		this.registerEvent(this.app.vault.on('rename', () => this.refreshColors()))
 		this.refreshColors()
 	}
 
+	private syncGraph() {
+		this.graph?.sync(
+			this.app.workspace,
+			this.settings.graphEnabled,
+			false,
+			this.settings.groupPrecedence === 'native'
+		)
+	}
+
 	refreshColors() {
+		if (!this.loaded) return
 		const explicit = new Map<string, string>()
 		for (const a of this.settings.fileColors) {
 			if (!(this.app.vault.getAbstractFileByPath(a.path) instanceof TFolder))
@@ -67,6 +112,8 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 			  )
 			: new Map<string, string>()
 		this.resolver.reset(explicit, notes)
+		this.syncGraph()
+		this.graph?.refresh()
 		this.applyColorStyles()
 	}
 
@@ -147,6 +194,7 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 	}
 
 	protected styleFileItem(path: string, el: HTMLElement) {
+		if (!this.loaded) return
 		const title = el.querySelector<HTMLElement>(
 			':scope > .nav-folder-title > .nav-folder-title-content'
 		)
@@ -162,6 +210,9 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 	}
 
 	onunload() {
+		this.loaded = false
+		this.graph?.dispose()
+		this.graph = undefined
 		this.app.workspace.containerEl
 			.querySelectorAll<HTMLElement>('.folder-color-graph-title')
 			.forEach((el) => {

@@ -46,7 +46,11 @@ export class FolderColorModal extends SetColorModal {
 				update()
 			}
 		}
+		let customPicker: import('obsidian').ColorComponent | undefined
 		const update = () => {
+			customPicker?.setValue(
+				assignmentColor(selected, this.plugin.settings.palette) ?? '#4f83cc'
+			)
 			choices.forEach((c) =>
 				c.button.setAttribute('aria-pressed', String(c.id === selected))
 			)
@@ -58,7 +62,8 @@ export class FolderColorModal extends SetColorModal {
 		}
 		new Setting(this.contentEl)
 			.setName('Custom color')
-			.addColorPicker((picker) =>
+			.addColorPicker((picker) => {
+				customPicker = picker
 				picker
 					.setValue(
 						assignmentColor(selected, this.plugin.settings.palette) ?? '#4f83cc'
@@ -67,7 +72,7 @@ export class FolderColorModal extends SetColorModal {
 						selected = value
 						update()
 					})
-			)
+			})
 		let pending = false
 		const commit = async (color: string | null) => {
 			if (pending) return

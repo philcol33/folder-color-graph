@@ -16,4 +16,4 @@ Private access is confined to GraphAdapter.ts. Feature detection checks renderer
 
 Resolution is cached by folder. Full correspondence indexing runs on settings/path/layout changes, never on animation frames. A one-second scan discovers new graph views and checks Folder Notes configuration; node updates are intercepted by setData. Rendering performs a cached value lookup only.
 
-Global Graph implemented first. Local Graph uses the same renderer shape, enabled in its own milestone. Compatibility must be rechecked on future Obsidian versions; this is a private adapter and deliberately fails closed when its shape changes.
+Global Graph and Local Graph both work on 1.13.7 and have independent toggles. Local Graph uses the same renderer shape, enabled in its own milestone. Compatibility must be rechecked on future Obsidian versions; this is a private adapter and deliberately fails closed when its shape changes.

@@ -10,16 +10,32 @@ import { FolderColorModal } from '../explorer/FolderColorModal'
 import { FolderColorSettingsTab } from './FolderColorSettingsTab'
 import { assignmentColor } from '../colors/ColorStore'
 import { ColorResolver } from '../colors/ColorResolver'
+import { migrateSettings, FolderColorGraphSettings } from '../colors/Settings'
+import { suggestColorForFolder } from '../colors/SuggestedColor'
 
 export class FolderColorGraphPlugin extends FileColorPlugin {
+	declare settings: FolderColorGraphSettings
+	async loadSettings() {
+		this.settings = migrateSettings(await this.loadData())
+	}
+	suggest(path: string) {
+		return suggestColorForFolder(
+			path,
+			this.settings.fileColors.filter(
+				(a) => this.app.vault.getAbstractFileByPath(a.path) instanceof TFolder
+			),
+			this.settings.palette,
+			this.settings.preferUnused
+		)
+	}
 	readonly resolver = new ColorResolver(new Map())
 	private saveQueue: Promise<void> = Promise.resolve()
 
 	async onload() {
 		await super.onload()
-    this.registerEvent(this.app.vault.on('create', () => this.refreshColors()))
-    this.registerEvent(this.app.vault.on('delete', () => this.refreshColors()))
-    this.registerEvent(this.app.vault.on('rename', () => this.refreshColors()))
+		this.registerEvent(this.app.vault.on('create', () => this.refreshColors()))
+		this.registerEvent(this.app.vault.on('delete', () => this.refreshColors()))
+		this.registerEvent(this.app.vault.on('rename', () => this.refreshColors()))
 		this.refreshColors()
 	}
 
@@ -53,6 +69,23 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 				.setIcon('palette')
 				.onClick(() => new FolderColorModal(this, file).open())
 		)
+		if (this.settings.automaticSuggestions)
+			menu.addItem((item) =>
+				item
+					.setTitle('Assign suggested color')
+					.setIcon('wand')
+					.onClick(() => {
+						const suggestion = this.suggest(file.path)
+						if (suggestion)
+							void this.assign(file, suggestion.id).catch(
+								() => new Notice('Could not save folder color.')
+							)
+						else
+							new Notice(
+								'Add a valid palette color in Folder Color Graph settings.'
+							)
+					})
+			)
 		if (this.settings.fileColors.some((a) => a.path === file.path)) {
 			menu.addItem((item) =>
 				item
@@ -100,9 +133,10 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		)
 		if (!title) return
 		const assignment = this.settings.fileColors.find((a) => a.path === path)
-		const color = assignment
-			? assignmentColor(assignment.color, this.settings.palette)
-			: null
+		const color =
+			this.settings.explorerEnabled && assignment
+				? assignmentColor(assignment.color, this.settings.palette)
+				: null
 		title.classList.toggle('folder-color-graph-title', !!color)
 		if (color) title.style.setProperty('--folder-color-graph-color', color)
 		else title.style.removeProperty('--folder-color-graph-color')

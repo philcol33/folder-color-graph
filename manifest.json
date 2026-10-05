@@ -1,11 +1,10 @@
 {
-	"id": "obsidian-file-color",
-	"name": "File Color",
-	"version": "1.1.0",
-	"minAppVersion": "1.2.7",
-	"description": "An Obsidian plugin for setting colors on folders and files in the file tree.",
-	"author": "ecustic",
-	"authorUrl": "https://github.com/ecustic",
-	"fundingUrl": "https://www.buymeacoffee.com/ecustic",
-	"isDesktopOnly": false
+  "id": "folder-color-graph",
+  "name": "Folder Color Graph",
+  "version": "0.1.0",
+  "minAppVersion": "1.2.7",
+  "description": "Assign colors to folders and automatically apply them to their notes in Obsidian Graph View.",
+  "author": "Philippe Colling (based on File Color by ecustic)",
+  "authorUrl": "https://github.com/philcol33/folder-color-graph",
+  "isDesktopOnly": false
 }

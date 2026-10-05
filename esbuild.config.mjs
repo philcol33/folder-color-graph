@@ -14,7 +14,7 @@ const prod = process.argv[2] === 'production'
 
 const replaceGoober = async (path, encoding) => {
   let contents = await readFile(path, encoding)
-  return contents.replace(/_goober/g, 'fileColorPluginGooberStyles')
+  return contents.replace(/_goober/g, 'folderColorGraphGooberStyles')
 }
 
 esbuild

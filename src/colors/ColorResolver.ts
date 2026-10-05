@@ -18,7 +18,7 @@ export class ColorResolver {
 		const cached = this.cache.get(folder)
 		if (cached !== undefined) return cached
 		let path = folder
-		while (true) {
+		for (;;) {
 			const color = this.explicit.get(path)
 			if (color) {
 				this.cache.set(folder, color)

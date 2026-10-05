@@ -36,6 +36,7 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 		)
 	}
 	readonly resolver = new ColorResolver(new Map())
+	private explicitColors = new Map<string, string>()
 	private graph?: GraphAdapter
 	private loaded = false
 	private folderNotesSignature = ''
@@ -111,6 +112,7 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 					)
 			  )
 			: new Map<string, string>()
+		this.explicitColors = explicit
 		this.resolver.reset(explicit, notes)
 		this.syncGraph()
 		this.graph?.refresh()
@@ -199,11 +201,9 @@ export class FolderColorGraphPlugin extends FileColorPlugin {
 			':scope > .nav-folder-title > .nav-folder-title-content'
 		)
 		if (!title) return
-		const assignment = this.settings.fileColors.find((a) => a.path === path)
-		const color =
-			this.settings.explorerEnabled && assignment
-				? assignmentColor(assignment.color, this.settings.palette)
-				: null
+		const color = this.settings.explorerEnabled
+			? this.explicitColors.get(path)
+			: null
 		title.classList.toggle('folder-color-graph-title', !!color)
 		if (color) title.style.setProperty('--folder-color-graph-color', color)
 		else title.style.removeProperty('--folder-color-graph-color')

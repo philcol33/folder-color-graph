@@ -25,6 +25,9 @@ export class Plugin {
 
   loadData = async () => undefined
   saveData = async (_data: unknown) => undefined
+  cleanups: Array<() => void> = []
+  register = (callback: () => void) => { this.cleanups.push(callback) }
+  registerInterval = (id: number) => { this.cleanups.push(() => window.clearInterval(id)) }
   registerEvent = (_eventRef: unknown) => undefined
   addSettingTab = (_tab: PluginSettingTab) => undefined
 }
@@ -115,10 +118,17 @@ export const createMockPluginApp = () => {
       emit: async (name: string, ...args: Array<unknown>) =>
         Promise.all((workspaceEvents[name] ?? []).map((handler) => handler(...args))),
     },
+    files: new Map<string, TFolder | TFile>(),
     vault: {
+      getAbstractFileByPath: (_path: string): TFolder | TFile | null => null,
+      getAllLoadedFiles: (): Array<TFolder | TFile> => [],
       on: (name: string, handler: EventHandler) => registerHandler(vaultEvents, name, handler),
       emit: async (name: string, ...args: Array<unknown>) =>
         Promise.all((vaultEvents[name] ?? []).map((handler) => handler(...args))),
     },
   }
 }
+
+export class TFolder { constructor(public path: string) {} }
+export class TFile { extension = 'md'; constructor(public path: string) {} }
+export class Notice { constructor(public message: string) {} }

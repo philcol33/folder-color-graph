@@ -21,13 +21,17 @@ export function folderNoteOptions(
 	if (!settings || typeof settings !== 'object')
 		return { ...fallbackOptions, location: fallback }
 	const data = settings as Record<string, unknown>
-  const excluded: FolderNoteOptions['excluded'] = []
-  if (Array.isArray(data.excludeFolders)) for (const raw of data.excludeFolders as unknown[]) {
-    if (!raw || typeof raw !== 'object') continue
-    const e = raw as Record<string, unknown>
-    if (typeof e.path === 'string' && (e.disableFolderNote === true || e.detached === true))
-      excluded.push({path:e.path,descendants:e.subFolders === true})
-  }
+	const excluded: FolderNoteOptions['excluded'] = []
+	if (Array.isArray(data.excludeFolders))
+		for (const raw of data.excludeFolders as unknown[]) {
+			if (!raw || typeof raw !== 'object') continue
+			const e = raw as Record<string, unknown>
+			if (
+				typeof e.path === 'string' &&
+				(e.disableFolderNote === true || e.detached === true)
+			)
+				excluded.push({ path: e.path, descendants: e.subFolders === true })
+		}
 	return {
 		location: data.storageLocation === 'parentFolder' ? 'outside' : 'inside',
 		template:

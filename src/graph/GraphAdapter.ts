@@ -80,7 +80,7 @@ export class GraphAdapter {
 				for (const leaf of leaves) {
 					const renderer = rendererOf(record(leaf)?.view)
 					if (!renderer) {
-						this.report()
+						if (record(record(leaf)?.view)?.renderer) this.report()
 						continue
 					}
 					seen.add(renderer)
@@ -124,7 +124,9 @@ export class GraphAdapter {
 			nodes: new Map(),
 			active: true,
 		}
-		const adapter = this
+		// Keep native receiver semantics in wrappers.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const adapter = this
 		patch.wrapper = function (this: Renderer, ...args) {
 			const result = original.apply(this, args)
 			if (adapter.active && patch.active) {
@@ -162,8 +164,9 @@ export class GraphAdapter {
 			if (!state) {
 				const original = node.getFillColor
 				state = { node, original, wrapper: original, fill: null, active: true }
-				const cached = state,
-					adapter = this
+				const cached = state
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const adapter = this
 				state.wrapper = function (this: Node, ...args) {
 					if (
 						!adapter.active ||
@@ -200,14 +203,22 @@ export class GraphAdapter {
 
 	private restoreNode(state: NodePatch) {
 		state.active = false
-		if (state.node.getFillColor === state.wrapper)
-			state.node.getFillColor = state.original
+		try {
+			if (state.node.getFillColor === state.wrapper)
+				state.node.getFillColor = state.original
+		} catch {
+			/* A frozen foreign node is already guarded by active=false. */
+		}
 	}
 	private restore(patch: RendererPatch) {
 		patch.active = false
 		for (const state of patch.nodes.values()) this.restoreNode(state)
-		if (patch.renderer.setData === patch.wrapper)
-			patch.renderer.setData = patch.original
+		try {
+			if (patch.renderer.setData === patch.wrapper)
+				patch.renderer.setData = patch.original
+		} catch {
+			/* Foreign renderer may have become immutable. */
+		}
 		try {
 			patch.renderer.changed()
 		} catch {
